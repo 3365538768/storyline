@@ -224,22 +224,8 @@ def train(bert_feature_dir,sentiment_feature_dir,pretrained,num_epochs):
     print(f"模型参数已保存到: {save_path}")
 
 def main():
-    # bert_feature_dir = "resources/bert_features/lijian.wav"
-    # sentiment_feature_dir = "resources/emotion/lijian.wav"
-    # train(bert_feature_dir, sentiment_feature_dir,pretrained=True,num_epochs=50)
-
-    model = AutoregressiveModel().to(device)
-    model.load_state_dict(torch.load("models/text2emo.pth"))
+    pass
 
 
-    text="你真就是个蠢货!"
-    prompt_audio_path="resources/slice/shoulinrui.m4a/shoulinrui.m4a_0000342400_0000504960.wav"
-    max_length=10
-    bert_feature=get_one_bert(text)[0].to(device)
-    labels,initial_sentiment=get_emotion_vec(prompt_audio_path)
-    initial_sentiment=torch.tensor(initial_sentiment).to(device)
-    predict_emotion=predict(model,bert_feature,initial_sentiment,max_length)
-    print(predict_emotion)
-    draw_emotion(predict_emotion,labels,"predict",0)
 if __name__ == "__main__":
     main()

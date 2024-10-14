@@ -8,7 +8,10 @@ import torch
 from tools.new_slice_audio import slice
 from subprocess import Popen
 from tools.config import python_exec
-from get_word_embedding import get_bert
+from get_word_embedding import get_bert,get_one_bert
+from get_emotion import  get_emotion_vec
+from train_text2emo import train,AutoregressiveModel,predict
+
 def slice_wav(train_file_name):
     slice_inp_path = "resources/train/" + train_file_name
     slice_opt_root = "resources/slice/" + train_file_name
@@ -213,9 +216,7 @@ def clear_slice(train_filename):
     path=f"resources/slice/{train_filename}"
     shutil.rmtree(path)
 
-
-if __name__ == "__main__":
-    train_filename = "lijian.wav"
+def prepare(train_filename):
     slice_wav(train_filename)  # 切割音频（原GPT切割）
     asr_slice(train_filename)  # 切割音频asr识别
     slice_log_path = f"resources/slice/{train_filename}/slice_log.txt"
@@ -224,3 +225,33 @@ if __name__ == "__main__":
     average_emo = get_average_emo(train_filename)  # 获得平均情感向量 (93,9) 93和步幅、音频长度有关，步幅为1s则就这里就表示93s每一秒一个取样，9为9种类型情感
     interval_to_emo(intervals, average_emo, train_filename)  # 得到每段音频对应的情感特征，保存在logs/emotion里
     get_bert(train_filename)
+
+def model1_train(train_filename,pretrained,num_epochs):
+    bert_feature_dir = "resources/bert_features/" + train_filename
+    sentiment_feature_dir = "resources/emotion/" + train_filename
+    train(bert_feature_dir, sentiment_feature_dir, pretrained, num_epochs)
+
+def model1_infer(text,prompt_audio_path,max_length):
+    model = AutoregressiveModel().to(device)
+    model.load_state_dict(torch.load("models/text2emo.pth"))
+
+    bert_feature = get_one_bert(text)[0].to(device)
+    print(bert_feature)
+    labels, initial_sentiment = get_emotion_vec(prompt_audio_path)
+    initial_sentiment = torch.tensor(initial_sentiment).to(device)
+    print(initial_sentiment)
+    predict_emotion = predict(model, bert_feature, initial_sentiment, max_length)
+    print(predict_emotion)
+    draw_emotion(predict_emotion, labels, "predict", 0)
+
+if __name__ == "__main__":
+    train_filename = "test.mp3"
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # model1_train(train_filename,pretrained=True,num_epochs=200)
+
+    text = "你真就是个蠢货!"
+    prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
+    max_length=10
+    model1_infer(text,prompt_audio_path,max_length)
+
+
