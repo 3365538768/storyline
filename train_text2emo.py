@@ -23,12 +23,12 @@ class SentimentDataset(Dataset):
 
             if os.path.exists(bert_path) and os.path.exists(sentiment_path):
                 # 加载 BERT 特征
-                bert_data = torch.load(bert_path)
+                bert_data = torch.load(bert_path,weights_only=False)  # [1, 21128]
                 bert_feature = bert_data.squeeze(0).float()  # [21128]
                 self.bert_features.append(bert_feature)
 
                 # 加载情感特征
-                sentiment_feature = torch.load(sentiment_path).float()  # [序列长度, 9]
+                sentiment_feature = torch.load(sentiment_path,weights_only=False).float()  # [序列长度, 9]
                 self.sentiment_features.append(sentiment_feature)
 
                 # 记录序列长度
@@ -215,7 +215,7 @@ def train(bert_feature_dir,sentiment_feature_dir,pretrained,num_epochs):
     # 定义模型
     model = AutoregressiveModel().to(device)
     if pretrained:
-        model.load_state_dict(torch.load("models/text2emo.pth"))
+        model.load_state_dict(torch.load("models/text2emo.pth",weights_only=False))
     # 训练模型
     train_model(model, train_dataloader, val_dataloader, num_epochs, learning_rate=1e-3)
 

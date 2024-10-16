@@ -4,8 +4,9 @@ import os
 
 def get_bert(file_name):
     # 1. 加载预训练的分词器和模型
-    tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-chinese")
-    model = AutoModelForMaskedLM.from_pretrained("google-bert/bert-base-chinese")
+    local_model_path = "models/bert-base-chinese"
+    tokenizer = AutoTokenizer.from_pretrained(local_model_path,trust_remote_code=True)
+    model = AutoModelForMaskedLM.from_pretrained(local_model_path,trust_remote_code=True)
     model.eval()  # 设置为评估模式
 
 

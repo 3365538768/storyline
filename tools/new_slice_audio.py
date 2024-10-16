@@ -10,8 +10,9 @@ from tools.slicer2 import Slicer
 def slice(inp, opt_root, threshold, min_length, min_interval, hop_size, max_sil_kept, _max, alpha, i_part, all_part):
     os.makedirs(opt_root, exist_ok=True)
 
-    # 输出文档路径
-    output_log_path = os.path.join(opt_root, 'slice_log.txt')
+    filename=os.path.basename(inp)
+    output_log_path = os.path.join(f"resources/slice/intervals/{filename}/slice_log.txt")
+    os.makedirs(os.path.dirname(output_log_path), exist_ok=True)
 
     if os.path.isfile(inp):
         input_files = [inp]

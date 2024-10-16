@@ -80,6 +80,7 @@ if __name__ == '__main__':
         vad_model_revision=vad_model_revision,
         punc_model=path_punc,
         punc_model_revision=punc_model_revision,
+        disable_update=True,
     )
 
     execute_asr(

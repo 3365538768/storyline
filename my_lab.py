@@ -11,7 +11,7 @@ from tools.config import python_exec
 from get_word_embedding import get_bert,get_one_bert
 from get_emotion import  get_emotion_vec
 from train_text2emo import train,AutoregressiveModel,predict
-
+from get_hubert import wav2hubert
 def slice_wav(train_file_name):
     slice_inp_path = "resources/train/" + train_file_name
     slice_opt_root = "resources/slice/" + train_file_name
@@ -26,7 +26,7 @@ def slice_wav(train_file_name):
     slice(slice_inp_path, slice_opt_root, threshold, min_length, min_interval, hop_size,
                                  max_sil_kept, _max, alpha, 0,n_process)
 
-    print(">>>>>>切割结束\n")
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>切割结束\n")
 
 
 def build_asr_command(asr_inp_dir, asr_opt_dir, asr_model, asr_model_size, asr_lang, asr_precision, python_exec):
@@ -53,18 +53,13 @@ def open_asr(asr_inp_dir, asr_opt_dir, asr_model, asr_model_size, asr_lang, asr_
     output_file_path = os.path.abspath(f'{output_folder}/{output_file_name}.list')
 
     # 启动 ASR 任务
-    yield f"ASR任务开启：{cmd}", {"__type__": "update", "visible": False}, {"__type__": "update", "visible": True}, {
-        "__type__": "update"}, {"__type__": "update"}, {"__type__": "update"}
+    yield f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ASR任务开启"
 
-    print(cmd)
     p_asr = Popen(cmd, shell=True)
     p_asr.wait()
 
     # 完成 ASR 任务
-    yield f"ASR任务完成, 查看终端进行下一步", {"__type__": "update", "visible": True}, {"__type__": "update",
-                                                                                        "visible": False}, {
-        "__type__": "update", "value": output_file_path}, {"__type__": "update", "value": output_file_path}, {
-        "__type__": "update", "value": asr_inp_dir}
+    yield f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ASR任务完成"
 def asr_slice(train_file_name):
     asr_inp_dir = "resources/slice/" + train_file_name
     asr_opt_dir = "resources/asr/"+train_file_name
@@ -74,7 +69,7 @@ def asr_slice(train_file_name):
     asr_precision = "float32"
 
     asr_generator = open_asr(asr_inp_dir, asr_opt_dir, asr_model, asr_size, asr_lang, asr_precision)
-    for message, visible_update_1, visible_update_2, visible_update_3, visible_update_4, visible_update_5 in asr_generator:
+    for message in asr_generator:
         print(message)
     print(">>>>>>asr结束\n")
 
@@ -129,6 +124,7 @@ def get_average_emo(filename):
         # draw_emotion(audio_emotion, labels, filename, window)  # 绘制情感图-
         emo.append(audio_emotion)
         shutil.rmtree(emo_slice_path)
+        print(f">>>>>>>>>>>>>>>>>>>>{window}窗口结束")
 
     weights = [0.35, 0.3, 0.2, 0.15]
     result = weighted_sum(emo, weights)
@@ -201,7 +197,8 @@ def interval_to_emo(intervals, average_emo, filename):
         corresponding_vectors = [average_emo[i] for i in indices]
         if corresponding_vectors:
             # 将对应的向量列表转换为张量
-            corresponding_tensor = torch.tensor(corresponding_vectors)
+            corresponding_array = np.array(corresponding_vectors)
+            corresponding_tensor = torch.tensor(corresponding_array)
             # 定义保存路径
             save_path = os.path.join(save_dir, f"{wav_name}.pt")
             # 保存张量为 .pt 文件
@@ -218,13 +215,14 @@ def clear_slice(train_filename):
 
 def prepare(train_filename):
     slice_wav(train_filename)  # 切割音频（原GPT切割）
+    get_slice_hubert(train_filename)
     asr_slice(train_filename)  # 切割音频asr识别
-    slice_log_path = f"resources/slice/{train_filename}/slice_log.txt"
+    slice_log_path = f"resources/slice/intervals/{train_filename}/slice_log.txt"
     intervals = read_intervals_from_txt(slice_log_path)
     clear_slice(train_filename)
     average_emo = get_average_emo(train_filename)  # 获得平均情感向量 (93,9) 93和步幅、音频长度有关，步幅为1s则就这里就表示93s每一秒一个取样，9为9种类型情感
     interval_to_emo(intervals, average_emo, train_filename)  # 得到每段音频对应的情感特征，保存在logs/emotion里
-    # get_bert(train_filename)
+    get_bert(train_filename)
 
 def model1_train(train_filename,pretrained,num_epochs):
     bert_feature_dir = "resources/bert_features/" + train_filename
@@ -233,7 +231,7 @@ def model1_train(train_filename,pretrained,num_epochs):
 
 def model1_infer(text,prompt_audio_path,max_length):
     model = AutoregressiveModel().to(device)
-    model.load_state_dict(torch.load("models/text2emo.pth"))
+    model.load_state_dict(torch.load("models/text2emo.pth",weights_only=False))
 
     bert_feature = get_one_bert(text)[0].to(device)
     print(bert_feature)
@@ -245,16 +243,30 @@ def model1_infer(text,prompt_audio_path,max_length):
     draw_emotion(predict_emotion, labels, "predict", 0)
 
 
+import os
 
+
+def get_slice_hubert(train_file_name):
+    folder_path = 'resources/slice/' + train_file_name
+    # 获取文件夹下所有非 .txt 文件的名字
+    file_names = [file for file in os.listdir(folder_path)
+                  if os.path.isfile(os.path.join(folder_path, file)) and not file.endswith('.txt')]
+
+    # 逐个处理文件
+    for file_name in file_names:
+        file_path = os.path.join(folder_path, file_name)
+        wav2hubert(file_path, train_file_name)
+
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>获取hubert结束\n")
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    train_filename = "test.mp3"
+    train_filename = "shoulinrui.m4a"
     prepare(train_filename)
-    # model1_train(train_filename,pretrained=True,num_epochs=200)
-    # text = "你真就是个蠢货!"
-    # prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
-    # max_length=10
-    # model1_infer(text,prompt_audio_path,max_length)
+    model1_train(train_filename,pretrained=True,num_epochs=200)
+    text = "你真就是个蠢货!"
+    prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
+    max_length=10
+    model1_infer(text,prompt_audio_path,max_length)
 
 

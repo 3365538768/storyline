@@ -20,7 +20,9 @@ iic/emotion2vec_base_finetuned (Jan. 2024 release)
 '''
 from funasr import AutoModel
 import numpy as np
-model = AutoModel(model="iic/emotion2vec_base_finetuned")
+
+local_model_path="models/emotion2vec_base_finetuned"
+model = AutoModel(model=local_model_path,disable_update=True)
 
 
 

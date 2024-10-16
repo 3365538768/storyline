@@ -2,5 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/models/bert-base-chinese" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/models/chinese-hubert-large" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/models/emotion2vec_base_finetuned" vcs="Git" />
   </component>
 </project>
