@@ -133,7 +133,7 @@ def get_average_emo(filename):
     weights = [0.35, 0.3, 0.2, 0.15]
     result = weighted_sum(emo, weights)
     # save_list(result, f"resources/emotion_data/{filename}/audio_emotion_average.txt")
-    # draw_emotion(result, labels, filename, "average")  # 绘制情感图
+    draw_emotion(result, labels, filename, "average")  # 绘制情感图
     return result
 
 
@@ -224,7 +224,7 @@ def prepare(train_filename):
     clear_slice(train_filename)
     average_emo = get_average_emo(train_filename)  # 获得平均情感向量 (93,9) 93和步幅、音频长度有关，步幅为1s则就这里就表示93s每一秒一个取样，9为9种类型情感
     interval_to_emo(intervals, average_emo, train_filename)  # 得到每段音频对应的情感特征，保存在logs/emotion里
-    get_bert(train_filename)
+    # get_bert(train_filename)
 
 def model1_train(train_filename,pretrained,num_epochs):
     bert_feature_dir = "resources/bert_features/" + train_filename
@@ -244,14 +244,17 @@ def model1_infer(text,prompt_audio_path,max_length):
     print(predict_emotion)
     draw_emotion(predict_emotion, labels, "predict", 0)
 
-if __name__ == "__main__":
-    train_filename = "test.mp3"
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # model1_train(train_filename,pretrained=True,num_epochs=200)
 
-    text = "你真就是个蠢货!"
-    prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
-    max_length=10
-    model1_infer(text,prompt_audio_path,max_length)
+
+
+if __name__ == "__main__":
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    train_filename = "test.mp3"
+    prepare(train_filename)
+    # model1_train(train_filename,pretrained=True,num_epochs=200)
+    # text = "你真就是个蠢货!"
+    # prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
+    # max_length=10
+    # model1_infer(text,prompt_audio_path,max_length)
 
 
