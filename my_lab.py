@@ -12,6 +12,8 @@ from get_word_embedding import get_bert,get_one_bert
 from get_emotion import  get_emotion_vec
 from train_text2emo import train,AutoregressiveModel,predict
 from get_hubert import wav2hubert
+from text2phonemes import get_phonemes
+
 def slice_wav(train_file_name):
     slice_inp_path = "resources/train/" + train_file_name
     slice_opt_root = "resources/slice/" + train_file_name
@@ -243,9 +245,6 @@ def model1_infer(text,prompt_audio_path,max_length):
     draw_emotion(predict_emotion, labels, "predict", 0)
 
 
-import os
-
-
 def get_slice_hubert(train_file_name):
     folder_path = 'resources/slice/' + train_file_name
     # 获取文件夹下所有非 .txt 文件的名字
@@ -262,11 +261,11 @@ def get_slice_hubert(train_file_name):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_filename = "shoulinrui.m4a"
-    prepare(train_filename)
-    model1_train(train_filename,pretrained=True,num_epochs=200)
-    text = "你真就是个蠢货!"
-    prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
-    max_length=10
-    model1_infer(text,prompt_audio_path,max_length)
-
+    # prepare(train_filename)
+    # model1_train(train_filename,pretrained=True,num_epochs=200)
+    # text = "我恨你"
+    # prompt_audio_path = "resources/train/shoulinrui.m4a_0000513280_0000795840.wav"
+    # max_length=10
+    # model1_infer(text,prompt_audio_path,max_length)
+    get_phonemes(train_filename)
 

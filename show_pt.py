@@ -1,4 +1,4 @@
 import torch
-file=torch.load("resources/emotion/shoulinrui.m4a/shoulinrui.m4a_0000795840_0001110400.wav.pt")
+file=torch.load("resources/text2phonemes/shoulinrui_m4a_0000063040_0000325440_wav.pt",weights_only=True)
 print(file)
 print(file.shape)
