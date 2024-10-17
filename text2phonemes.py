@@ -92,6 +92,7 @@ def get_phonemes(train_file):
 
 if __name__ == '__main__':
     get_phonemes("shoulinrui.m4a")
+
 #
 # tensor([[  0,   1,   5],
 #         [101,   0,   0],
